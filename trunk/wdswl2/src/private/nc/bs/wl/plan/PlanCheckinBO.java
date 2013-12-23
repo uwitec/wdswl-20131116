@@ -532,7 +532,7 @@ public class PlanCheckinBO {
 	private AccountCalendar getCalendar(UFDate date)
 			throws InvalidAccperiodExcetion {
 		AccountCalendar calendar = AccountCalendar.getInstance();
-//		calendar.setDate(date);
+		calendar.setDate(date);
 		return calendar;
 	}
 }
