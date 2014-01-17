@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import nc.ui.ic.pub.bill.AfterEditCtrl;
 import nc.ui.pub.ClientEnvironment;
 import nc.ui.pub.bill.BillCardPanel;
 import nc.ui.pub.bill.BillListPanel;
@@ -45,7 +46,7 @@ public class PlanDealEventHandler {
 	}
 
 	private AvailNumBO abo = null;
-
+	
 	public AvailNumBO getAbo() {
 
 		if (abo == null) {
@@ -204,29 +205,12 @@ public class PlanDealEventHandler {
 		StockInvOnHandVO[] vos = (StockInvOnHandVO[]) SingleVOChangeDataUiTool
 				.runChangeVOAry(billdatas, StockInvOnHandVO.class,
 						"nc.ui.wds.self.changedir.CHGWDS2TOACCOUNTNUM");
-//		//==遍历查询条件
-//		for(int i=0;i<=vos.length;i++)
-//		{
-//			String[] retAry=vos[i].getAttributeNames();
-//			for(String str:retAry)
-//			{
-//				System.out.println("查询列索引"+str+"===值为："+vos[i].getAttributeValue(str));
-//			}
-//		}
-		
 		if (vos == null || vos.length == 0)
 			return;
+		
 		StockInvOnHandVO[] nvos = (StockInvOnHandVO[]) getAbo()
 				.getAvailNumForClient(vos);
-//		//==遍历查询结果
-//		for(int i=0;i<=nvos.length;i++)
-//		{
-//			String[] retAry=vos[i].getAttributeNames();
-//			for(String str:retAry)
-//			{
-//				System.out.println("结果集索引"+str+"===值为："+nvos[i].getAttributeValue(str));
-//			}
-//		}
+		
 		if (nvos == null || nvos.length == 0)
 			return;
 		for (int i = 0; i < billdatas.length; i++) {
@@ -247,7 +231,6 @@ public class PlanDealEventHandler {
 	 */
 	private void setInNum(PlanDealVO[] billdatas) throws Exception
 	{
-		
 		for(int i=0;i<billdatas.length;i++)
 		{
 			String str1=billdatas[i].getPk_inwhouse();
@@ -268,28 +251,10 @@ public class PlanDealEventHandler {
 		StockInvOnHandVO[] vos = (StockInvOnHandVO[]) SingleVOChangeDataUiTool
 				.runChangeVOAry(billdatas, StockInvOnHandVO.class,
 						"nc.ui.wds.self.changedir.CHGWDS2TOACCOUNTNUM");
-//		//==遍历查询条件
-//		for(int i=0;i<=vos.length;i++)
-//		{
-//			String[] retAry=vos[i].getAttributeNames();
-//			for(String str:retAry)
-//			{
-//				System.out.println("查询列索引"+str+"===值为："+vos[i].getAttributeValue(str));
-//			}
-//		}
 		if (vos == null || vos.length == 0)
 			return;
 		StockInvOnHandVO[] nvos = (StockInvOnHandVO[]) getAbo()
 				.getAvailNumForClient(vos);
-//		//==遍历查询结果
-//		for(int i=0;i<=nvos.length;i++)
-//		{
-//			String[] retAry=vos[i].getAttributeNames();
-//			for(String str:retAry)
-//			{
-//				System.out.println("结果集索引"+str+"===值为："+nvos[i].getAttributeValue(str));
-//			}
-//		}
 		if (nvos == null || nvos.length == 0)
 			return;
 		for (int i = 0; i < billdatas.length; i++) {
@@ -299,6 +264,13 @@ public class PlanDealEventHandler {
 				billdatas[i].setNstorenumin(uf1);
 				billdatas[i].setNdrqstorenumin(uf2);
 			}
+		}
+		for(int i=0;i<billdatas.length;i++)
+		{
+			String str1=billdatas[i].getPk_inwhouse();
+			String str2=billdatas[i].getPk_outwhouse();
+			billdatas[i].setAttributeValue("pk_outwhouse", str1);
+			billdatas[i].setAttributeValue("pk_inwhouse", str2);
 		}
 	}
 
@@ -346,40 +318,7 @@ public class PlanDealEventHandler {
 		setDateStock(billdatas,vos);
 		
 	}
-//	private String str;
-//	/**
-//	 * 修改人：王刚
-//	 *修改时间：2013、11、27
-//	 * 得到收货站库存量
-//	 * @param billdatas
-//	 * @throws Exception
-//	 */
-//	private void getShNum(PlanDealVO[] billdatas) throws Exception
-//	{
-//		// 构造现存量查询条件
-//		StockInvOnHandVO[] vos = (StockInvOnHandVO[]) SingleVOChangeDataUiTool
-//				.runChangeVOAry(billdatas, StockInvOnHandVO.class,
-//						"nc.ui.wds.self.changedir.CHGWDS2TOACCOUNTNUM");
-//		if (vos == null || vos.length == 0)
-//			{
-//			return;
-//			}
-//		
-//		//将查询条件里面的收货站的值付给发货站(仅为了方便取值){不走逻辑}
-//		for(int i=0;i<vos.length;i++)
-//		{
-//			vos[i].setAttributeValue("pk_customize1",billdatas[i].getAttributeValue("pk_inwhouse"));
-////			vos[i].setAttributeValue("pk_customize1","1021A91000000004UXCH");
-//		}
-//		// 获得现存量
-//		StockInvOnHandVO[] nvos = (StockInvOnHandVO[]) getStock()
-//				.queryStockCombinForClient(vos);
-//		//得到收货站库存量
-//		for(int i=0;i<nvos.length;i++)
-//		{
-//			billdatas[i].setNstorenumin((UFDouble)nvos[i].getWhs_stocktonnage());
-//		}
-//	}
+
    /**
     * 设置合格状态的指定期间段内的  库存量
  * @param billdatas 
