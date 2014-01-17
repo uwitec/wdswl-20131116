@@ -91,7 +91,12 @@ public class CHGWDS8TO4C  extends nc.bs.pf.change.VOConversion {
 				//cinventorycode,invname
 				"B_invname->getColValue(bd_invbasdoc, invname,pk_invbasdoc,B_cinvbasid)",
 				"B_cinventorycode->getColValue(bd_invbasdoc, invcode,pk_invbasdoc,B_cinvbasid)",
-				//add by yf 20140106 解决下游发票报错提示，不显示存货名称和编码的问题 begin
+				//add by yf 20140106 解决下游发票报错提示，不显示存货名称和编码的问题 end
+				//add by yf 20140116 解决下游erp销售出库单，买赠业务自定义项vdef10,vdef11  begin
+				//vdef10,vdef11
+				"B_vuserdef10->getColValue(so_saleexecute, vdef10,csale_bid,B_cfirstbillbid)",
+				"B_vuserdef11->getColValue(so_saleexecute, vdef11,csale_bid,B_cfirstbillbid)",
+				//add by yf 20140116 解决下游erp销售出库单，买赠业务自定义项vdef10,vdef11 end
 				"H_cbilltypecode->\"4C\"",
 				"H_pk_calbody->getColValue(bd_stordoc, pk_calbody,pk_stordoc,H_srl_pk)",//库存组织
 				"H_cothercorpid->getColValue(bd_stordoc, pk_corp,pk_stordoc,H_srl_pk)",//入库公司
