@@ -482,4 +482,9 @@ public class MyClientUI extends OutPubClientUI implements
 	public void setRefBillType(String curRefBilltype) {
 		this.curRefBilltype = curRefBilltype;
 	}	
+	@Override
+	public Object getUserObject() {
+		// TODO Auto-generated method stub
+		return super.getUserObject();
+	}
 }
