@@ -14,6 +14,7 @@ import nc.ui.trade.manage.BillManageUI;
 import nc.ui.wds.ic.pub.OutPubClientUI;
 import nc.ui.wds.ic.pub.OutPubEventHandler;
 import nc.ui.wds.w8004040204.ssButtun.ISsButtun;
+import nc.ui.wl.pub.LoginInforHelper;
 import nc.uif.pub.exception.UifException;
 import nc.vo.dm.order.SendorderVO;
 import nc.vo.ic.other.out.TbOutgeneralBVO;
@@ -26,6 +27,7 @@ import nc.vo.pub.lang.UFDouble;
 import nc.vo.scm.pu.PuPubVO;
 import nc.vo.trade.pub.IBillStatus;
 import nc.vo.wl.pub.BillRowNo;
+import nc.vo.wl.pub.LoginInforVO;
 import nc.vo.wl.pub.WdsWlPubConst;
 import nc.vo.wl.pub.WdsWlPubTool;
 /**
@@ -42,7 +44,11 @@ public class OtherOutEventHandler extends OutPubEventHandler {
 	public OtherOutEventHandler(OutPubClientUI billUI, IControllerBase control) {
 		super(billUI, control);
 	}
-	
+	@Override
+	protected void onBoQuery() throws Exception {
+		// TODO Auto-generated method stub
+		super.onBoQuery();
+	}
 	protected void onBoElse(int intBtn) throws Exception {
 		super.onBoElse(intBtn);
 		switch (intBtn) {
@@ -190,6 +196,7 @@ public class OtherOutEventHandler extends OutPubEventHandler {
 				}
 			}			
 		}
+		//修改人：王刚	修改时间2013、12、2
 		if(getBillCardPanelWrapper().getBillVOFromUI().getChildrenVO().length==0)
 		{
 			throw new BusinessException("表体不能为空");
@@ -279,6 +286,20 @@ public class OtherOutEventHandler extends OutPubEventHandler {
 		}
         valuteOrder();
 			
+        
+        
+        /**
+         * 修改人：王刚 修改时间：2013、12、9 修改原因：不是本仓库操作员不能修改其他出库
+         */
+        LoginInforHelper login = new LoginInforHelper();
+        LoginInforVO loginUser=  login.getLogInfor(_getOperator());
+        //得到绑定的分仓信息
+        String fcMessege= loginUser.getSpaceid();
+       String fcMessege2=(String) getBufferData().getCurrentVO().getParentVO().getAttributeValue("pk_cargdoc");
+       if(!fcMessege.equals(fcMessege2))
+       {
+    	   throw new Exception("人员绑定货位非制单货位不能修改");
+       }
 		super.onBoEdit();
 		
 		
