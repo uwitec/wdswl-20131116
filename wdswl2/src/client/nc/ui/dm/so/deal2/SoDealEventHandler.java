@@ -1,6 +1,9 @@
 package nc.ui.dm.so.deal2;
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import nc.ui.pub.ClientEnvironment;
 import nc.ui.pub.beans.UIDialog;
@@ -299,10 +302,27 @@ public class SoDealEventHandler{
 		//2013.12.23 ÐÞ¸ÄÈËÍõ¸Õ
 		for(int i=0;i<hvos.length;i++)
 		{
-			if(billvos[i].getChildrenVO()!=null)
+//			if(billvos[i].getChildrenVO()!=null)
+//			{
+////				ui.getPanel().getHeadBillModel().setValueAt(billvos[i].getChildrenVO()[0].getAttributeValue("csaleid"), i, "vdefzdy");
+//			}
+			Set cSaleidSet=new HashSet();
+			CircularlyAccessibleValueObject[] children=billvos[i].getChildrenVO();
+			for(CircularlyAccessibleValueObject obj:children)
 			{
-				ui.getPanel().getHeadBillModel().setValueAt(billvos[i].getChildrenVO()[0].getAttributeValue("csaleid"), i, "csaleid");
+				String csaleid=(String) obj.getAttributeValue("csaleid");
+				cSaleidSet.add(csaleid);
 			}
+			Iterator<String> iterator=cSaleidSet.iterator();
+			String str="";
+			while(iterator.hasNext()){
+				str+=iterator.next()+"-";
+			}
+			if(billvos[i].getChildrenVO()!=null)
+				{
+					ui.getPanel().getHeadBillModel().setValueAt(str, i, "vdefzdy");
+				}
+			
 		}
 		getBodyDataPane().setBodyDataVO(billvos[0].getChildrenVO());
 		getBodyDataPane().execLoadFormula();
@@ -704,9 +724,16 @@ public class SoDealEventHandler{
 		ArrayList<SoDealVO> list = new ArrayList<SoDealVO>();
 		for(SoDealVO dealvo:m_billdatas){
 			String vreceiptcode = dealvo.getCsaleid();
-			if(key.equalsIgnoreCase(vreceiptcode)){
-				list.add(dealvo);
+			String key1=key.substring(0, key.length()-1);
+			String[] keyArr=key1.split("-");
+			for(int i=0;i<keyArr.length;i++)
+			{
+				if(keyArr[i].equalsIgnoreCase(vreceiptcode)){
+					list.add(dealvo);
+				}
 			}
+			System.out.println(vreceiptcode);
+			
 		}
 		curBodys = list.toArray( new SoDealVO[0]);
 		return curBodys;
