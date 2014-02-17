@@ -349,7 +349,7 @@ public class SoDealClientUI extends ToftPanel implements BillEditListener,BillEd
 	 */
 	private void loadBodyData(int row){
 		getPanel().getBodyBillModel().clearBodyData();
-		String key = (String) getPanel().getHeadBillModel().getValueAt(row,"csaleid");
+		String key = (String) getPanel().getHeadBillModel().getValueAt(row,"vdefzdy");
 //		getPanel().getBodyBillModel().setBodyDataVO(m_handler.getDataBuffer()[row].getBodyVos());
 		//修改人：王刚
 		//修改日期：2013.12.26
