@@ -19,6 +19,7 @@ import nc.vo.pub.lang.UFDate;
 import nc.vo.pub.lang.UFDouble;
 import nc.vo.scm.pu.PuPubVO;
 import nc.vo.wl.pub.VOTool;
+import nc.vo.wl.pub.WdsWlPubConst;
 
 /**
  * @作者：lyf
@@ -79,6 +80,58 @@ public class PlanCheckinBO {
 
 	}
 
+	/*
+	 * add by yf 2014-02-11 增加虚拟维度，保存发运计划时，普通计划和虚拟计划分开校验 改void
+	 * nc.bs.wl.plan.PlanCheckinBO.beforeCheck(String pk_outwhouse, String
+	 * pk_inwhouse, String pk, String date, UFBoolean reserve15) throws
+	 * BusinessException vo参数
+	 */
+	public void beforeCheck(AggregatedValueObject vo) throws BusinessException {
+		// -----
+		SendplaninVO hend = (SendplaninVO) vo.getParentVO();// 主表vo
+		UFDate date = hend.getDmakedate();// 制单日期
+		// 入库仓库主键
+		String pk_in = PuPubVO.getString_TrimZeroLenAsNull(hend
+				.getAttributeValue(pk_inwhouse));
+		// 出库仓库主键
+		String pk_out = PuPubVO.getString_TrimZeroLenAsNull(hend
+				.getAttributeValue(pk_outwhouse));
+		String pk = hend.getPk_sendplanin();// 计划pk
+		UFBoolean reserve15 = hend.getReserve15();//
+		UFBoolean fisxn = PuPubVO.getUFBoolean_NullAs(hend
+				.getAttributeValue(WdsWlPubConst.dmplan_xn), UFBoolean.FALSE);// 是否虚拟
+		// -----
+
+		AccountCalendar calendar = AccountCalendar.getInstance();
+		calendar.setDate(date);
+		UFDate beginDate = calendar.getMonthVO().getBegindate();
+		UFDate endDate = calendar.getMonthVO().getEnddate();
+		StringBuffer sql = new StringBuffer();
+		sql.append(" select count(*) from wds_sendplanin ");
+		sql.append(" where wds_sendplanin.iplantype=0 and dmakedate between '");
+		sql.append(beginDate + "' and '" + endDate);
+		sql.append("' and pk_inwhouse ='" + pk_in + "' ");
+		sql.append("  and pk_outwhouse='" + pk_out + "' ");
+		// sql.append("  and isnull(reserve15,'N')='"+reserve15+"'");//是否欠发
+		// 是否虚拟
+		sql.append("  and isnull(" + WdsWlPubConst.dmplan_xn + ",'N')='"
+				+ fisxn + "'");// 是否虚拟
+		sql.append(" and isnull(dr,0)=0");
+
+		int i = PuPubVO.getInteger_NullAs(getBaseDAO().executeQuery(
+				sql.toString(), WdsPubResulSetProcesser.COLUMNPROCESSOR), 0);
+		if (pk == null || "".equalsIgnoreCase(pk)) {
+			if (i > 0) {
+				throw new BusinessException("该调入仓库，当前会计月已经有月计划,只可以做追加计划");
+			}
+		} else {
+			if (i > 1) {
+				throw new BusinessException("该调入仓库，当前会计月已经有月计划,只可以做追加计划");
+			}
+		}
+
+	}
+
 	/**
 	 * 
 	 * @作者：lyf
@@ -123,8 +176,12 @@ public class PlanCheckinBO {
 			if (pk_outwhouse == null) {
 				pk_outwhouse = "";
 			}
+			// modify by yf 2014-02-11 增加虚拟维度 begin
+			UFBoolean fisxn = PuPubVO.getUFBoolean_NullAs(parent
+					.getAttributeValue(WdsWlPubConst.dmplan_xn), UFBoolean.FALSE);// 是否虚拟
+			// modify by yf 2014-02-11 增加虚拟维度 begin
 			// modify by yf 2013-11-26 以制单日期，确定计划会计期间 begin
-//			AccountCalendar calendar = AccountCalendar.getInstance();
+			// AccountCalendar calendar = AccountCalendar.getInstance();
 			AccountCalendar calendar = getCalendar(parent.getDmakedate());
 			// modify by yf 2013-11-26 以制单日期，确定计划会计期间 end
 			UFDate beginDate = calendar.getMonthVO().getBegindate();
@@ -139,6 +196,10 @@ public class PlanCheckinBO {
 			sql1.append(beginDate + "' and '" + endDate);
 			sql1.append("' and pk_inwhouse ='" + pk_inwhouse + "'");
 			sql1.append(" and pk_outwhouse ='" + pk_outwhouse + "'");
+			// modify by yf 2014-02-11 增加虚拟维度 begin
+			sql1.append("  and isnull(" + WdsWlPubConst.dmplan_xn + ",'N')='"
+					+ fisxn + "'");
+			// modify by yf 2014-02-11 增加虚拟维度 end
 			List<SendplaninBVO> mods = new ArrayList<SendplaninBVO>();
 			Object o = getBaseDAO().executeQuery(sql1.toString(),
 					new ColumnProcessor());
@@ -184,12 +245,16 @@ public class PlanCheckinBO {
 		if (pk_outwhouse == null) {
 			pk_outwhouse = "";
 		}
+		// modify by yf 2014-02-11 增加虚拟维度 begin
+		UFBoolean fisxn = PuPubVO.getUFBoolean_NullAs(parent
+				.getAttributeValue(WdsWlPubConst.dmplan_xn), UFBoolean.FALSE);// 是否虚拟
+		// modify by yf 2014-02-11 增加虚拟维度 begin
 		SendplaninBVO[] childs = (SendplaninBVO[]) obj.getChildrenVO();
 		SendplaninVO hend = (SendplaninVO) obj.getParentVO();
 		// UFBoolean reserve15= PuPubVO.getUFBoolean_NullAs(hend.getReserve15(),
 		// UFBoolean.FALSE);//表头是否欠发
 		// modify by yf 2013-12-03 以制单日期，确定计划会计期间 begin
-//		AccountCalendar calendar = AccountCalendar.getInstance();
+		// AccountCalendar calendar = AccountCalendar.getInstance();
 		AccountCalendar calendar = getCalendar(parent.getDmakedate());
 		// modify by yf 2013-12-03 以制单日期，确定计划会计期间 end
 		UFDate beginDate = calendar.getMonthVO().getBegindate();
@@ -210,6 +275,10 @@ public class PlanCheckinBO {
 		sql.append(beginDate + "' and '" + endDate);
 		sql.append("' and pk_inwhouse ='" + pk_inwhouse + "'");
 		sql.append(" and pk_outwhouse ='" + pk_outwhouse + "'");
+		// modify by yf 2014-02-11 增加虚拟维度 begin
+		sql.append("  and isnull(" + WdsWlPubConst.dmplan_xn + ",'N')='"
+				+ fisxn + "'");
+		// modify by yf 2014-02-11 增加虚拟维度 end
 		List<SendplaninBVO> adds = new ArrayList<SendplaninBVO>();
 		List<SendplaninBVO> mods = new ArrayList<SendplaninBVO>();
 		Object o = getBaseDAO().executeQuery(sql.toString(),
@@ -364,9 +433,12 @@ public class PlanCheckinBO {
 		SendplaninVO hend = (SendplaninVO) vo.getParentVO();
 		UFBoolean reserve15 = PuPubVO.getUFBoolean_NullAs(hend.getReserve15(),
 				UFBoolean.FALSE);// 表头是否欠发
-
+		// modify by yf 2014-02-11 增加虚拟维度 begin
+		UFBoolean fisxn = PuPubVO.getUFBoolean_NullAs(hend
+				.getAttributeValue(WdsWlPubConst.dmplan_xn), UFBoolean.FALSE);// 是否虚拟
+		// modify by yf 2014-02-11 增加虚拟维度 begin
 		// modify by yf 2013-12-03 以制单日期，确定计划会计期间 begin
-//		AccountCalendar calendar = AccountCalendar.getInstance();
+		// AccountCalendar calendar = AccountCalendar.getInstance();
 		AccountCalendar calendar = getCalendar(hend.getDmakedate());
 		// modify by yf 2013-12-03 以制单日期，确定计划会计期间 end
 		UFDate beginDate = calendar.getMonthVO().getBegindate();
@@ -391,6 +463,10 @@ public class PlanCheckinBO {
 		sql.append("' and pk_inwhouse ='" + pk_in + "'");
 		sql.append("  and pk_outwhouse='" + pk_out + "'");
 		sql.append("  and wds_sendplanin.iplantype=0 ");
+		// modify by yf 2014-02-11 增加虚拟维度 begin
+		sql.append("  and isnull(" + WdsWlPubConst.dmplan_xn + ",'N')='"
+				+ fisxn + "'");
+		// modify by yf 2014-02-11 增加虚拟维度 end
 		String pk = PuPubVO.getString_TrimZeroLenAsNull(getBaseDAO()
 				.executeQuery(sql.toString(),
 						WdsPubResulSetProcesser.COLUMNPROCESSOR));
@@ -425,9 +501,13 @@ public class PlanCheckinBO {
 		if (pk_outwhouse == null) {
 			pk_outwhouse = "";
 		}
+		// modify by yf 2014-02-11 增加虚拟维度 begin
+		UFBoolean fisxn = PuPubVO.getUFBoolean_NullAs(parent
+				.getAttributeValue(WdsWlPubConst.dmplan_xn), UFBoolean.FALSE);// 是否虚拟
+		// modify by yf 2014-02-11 增加虚拟维度 begin
 		SendplaninBVO[] childs = (SendplaninBVO[]) obj.getChildrenVO();
 		// modify by yf 2013-12-03 以制单日期，确定计划会计期间 begin
-//		AccountCalendar calendar = AccountCalendar.getInstance();
+		// AccountCalendar calendar = AccountCalendar.getInstance();
 		AccountCalendar calendar = getCalendar(parent.getDmakedate());
 		// modify by yf 2013-12-03 以制单日期，确定计划会计期间 end
 		UFDate beginDate = calendar.getMonthVO().getBegindate();
@@ -448,6 +528,10 @@ public class PlanCheckinBO {
 		sql.append(beginDate + "' and '" + endDate);
 		sql.append("' and pk_inwhouse ='" + pk_inwhouse + "'");
 		sql.append(" and pk_outwhouse ='" + pk_outwhouse + "'");
+		// modify by yf 2014-02-11 增加虚拟维度 begin
+		sql.append("  and isnull(" + WdsWlPubConst.dmplan_xn + ",'N')='"
+				+ fisxn + "'");
+		// modify by yf 2014-02-11 增加虚拟维度 end
 		List<SendplaninBVO> mods = new ArrayList<SendplaninBVO>();
 		Object o = getBaseDAO().executeQuery(sql.toString(),
 				new ColumnProcessor());
@@ -524,6 +608,7 @@ public class PlanCheckinBO {
 
 	/**
 	 * 根据日期返回日期所在会计期间日历
+	 * 
 	 * @yf
 	 * @param date
 	 * @return
