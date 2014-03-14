@@ -6,12 +6,12 @@ import nc.ui.ml.NCLangRes;
 import nc.ui.pub.ButtonObject;
 import nc.ui.pub.ToftPanel;
 import nc.ui.so.so001.order.SaleOrderAdminUI;
-import nc.ui.trade.business.HYPubBO_Client;
 import nc.ui.wl.pub.LongTimeTask;
+import nc.vo.pub.AggregatedValueObject;
 import nc.vo.pub.lang.UFBoolean;
 import nc.vo.so.so001.SaleOrderVO;
+import nc.vo.so.so001.SaleorderBVO;
 import nc.vo.so.so001.SaleorderHVO;
-import nc.vo.wl.pub.WdsWlPubConst;
 
 public class SOClientUI extends SaleOrderAdminUI {
 
@@ -31,11 +31,15 @@ public class SOClientUI extends SaleOrderAdminUI {
 	public String getModuleCode() {
 		return "40060301";
 	}
+
 	@Override
 	protected void initialize() {
 		super.initialize();
-		getBillListPanel().getHeadTable().setSelectionMode(ListSelectionModel.SINGLE_SELECTION );
+		getBillListPanel().setMultiSelect(true);
+		getBillListPanel().getHeadTable().setSelectionMode(
+				ListSelectionModel.SINGLE_SELECTION);
 	}
+
 	@Override
 	public ButtonObject[] getBillButtons() {
 		if (buttonarray == null) {
@@ -62,14 +66,14 @@ public class SOClientUI extends SaleOrderAdminUI {
 	@Override
 	public void onButtonClicked(ButtonObject bo) {
 		// 未选中行处理
-		if (strShowState.equals("列表") /*-=notranslate=-*/
+		if (strShowState.equals("列表") /* -=notranslate=- */
 				&& getBillListPanel().getHeadTable().getSelectedRowCount() <= 0
 				&& bo.getParent() != boBusiType && bo.getParent() != boBrowse
 				&& bo != boDocument && bo != boListDeselectAll
 				&& bo != boListSelectAll && bo != boCard && bo != boQuery
 				&& bo.getParent() != boAdd && bo.getParent() != boBusiType) {
-			showWarningMessage(NCLangRes.getInstance().getStrByID(
-					"40060301", "UPP40060301-000281")/* @res "请选择一条单据" */);
+			showWarningMessage(NCLangRes.getInstance().getStrByID("40060301",
+					"UPP40060301-000281")/* @res "请选择一条单据" */);
 			return;
 		}
 		super.onButtonClicked(bo);
@@ -94,23 +98,43 @@ public class SOClientUI extends SaleOrderAdminUI {
 	}
 
 	private void onBoXuni() throws Exception {
+		doCloseOrOpen(xuni);
+	}
+
+	private void doCloseOrOpen(UFBoolean xuni) throws Exception {
+		//modify by yf 2014-02-20 批量标虚 begin
+		// SaleOrderVO saleorder = (SaleOrderVO) getVO(false);
+		SaleOrderVO[] saleorders = (SaleOrderVO[]) getSelectVOs();
 		//
-		SaleOrderVO saleorder = (SaleOrderVO) getVO(false);
-		//
-		if (saleorder != null) {
-			SaleorderHVO hvo = saleorder.getHeadVO();
-			doCloseOrOpen(new String[] { hvo.getPrimaryKey() }, this, xuni);
+		if (saleorders != null && saleorders.length > 0) {
+			SaleorderHVO hvo = null;
+			String[] keys = new String[saleorders.length];
+			for (int i = 0; i < saleorders.length; i++) {
+				hvo = saleorders[i].getHeadVO();
+				keys[i] = hvo.getPrimaryKey();
+			}
+			doCloseOrOpen(keys, this, xuni);
 		}
+		//modify by yf 2014-02-20 批量标虚 end
+	}
+
+	private SaleOrderVO[] getSelectVOs() {
+		AggregatedValueObject[] selectVos = null;
+		if (strShowState.equals("列表")) { /* -=notranslate=- */
+			selectVos = getBillListPanel().getMultiSelectedVOs(
+					SaleOrderVO.class.getName(), SaleorderHVO.class.getName(),
+					SaleorderBVO.class.getName());
+
+		} else {
+			SaleOrderVO saleorder = (SaleOrderVO) getVO(false);
+			selectVos = new SaleOrderVO[] { saleorder };
+		}
+
+		return (SaleOrderVO[]) selectVos;
 	}
 
 	private void onBoUnXuni() throws Exception {
-		//
-		SaleOrderVO saleorder = (SaleOrderVO) getVO(false);
-		//
-		if (saleorder != null) {
-			SaleorderHVO hvo = saleorder.getHeadVO();
-			doCloseOrOpen(new String[] { hvo.getPrimaryKey() }, this, unxuni);
-		}
+		doCloseOrOpen(unxuni);
 
 	}
 
