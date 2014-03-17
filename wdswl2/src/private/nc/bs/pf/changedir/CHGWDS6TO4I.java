@@ -90,6 +90,14 @@ public class CHGWDS6TO4I  extends nc.bs.pf.change.VOConversion {
 	public String[] getFormulas() {
 		
 		return new String[] {
+				//add by yf 20140221 解决下游发票报错提示，不显示存货名称和编码的问题 begin
+				//cinventorycode,invname
+				"B_invname->getColValue(bd_invbasdoc, invname,pk_invbasdoc,B_cinvbasid)",
+				"B_cinventorycode->getColValue(bd_invbasdoc, invcode,pk_invbasdoc,B_cinvbasid)",
+				//add by yf 20140221解决下游发票报错提示，不显示存货名称和编码的问题 end
+				//add by yf 20140224 物流其他出库单据收发类别为样品的，计算全月平均单单价后，报错 begin
+				"B_vuserdef6->getColValue(bd_invmandoc,refsaleprice, pk_invmandoc,B_cinventoryid )",
+				//add by yf 20140224 物流其他出库单据收发类别为样品的，计算全月平均单单价后，报错 end
 				"H_cbilltypecode->\"4I\"",
 				"H_pk_calbody->getColValue(bd_stordoc, pk_calbody,pk_stordoc,H_srl_pk)",//库存组织
 				"H_cothercorpid->getColValue(bd_stordoc, pk_corp,pk_stordoc,H_srl_pk)",//入库公司
