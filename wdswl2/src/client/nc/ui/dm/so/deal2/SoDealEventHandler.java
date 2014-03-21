@@ -77,7 +77,15 @@ public class SoDealEventHandler{
 	public void onButtonClicked(String btnTag){
 		try {
 			if(btnTag.equalsIgnoreCase(WdsWlPubConst.DM_PLANDEAL_BTNTAG_DEAL)){
-				onDeal();
+				try {
+					ui.updateButtonStatus(WdsWlPubConst.DM_PLANDEAL_BTNTAG_DEAL, false);
+					onDeal();
+				} catch (Exception e) {
+					throw e;
+				}finally{
+					ui.updateButtonStatus(WdsWlPubConst.DM_PLANDEAL_BTNTAG_DEAL, true);
+				}
+				
 			}else if(btnTag.equalsIgnoreCase(WdsWlPubConst.DM_PLANDEAL_BTNTAG_SELNO)){
 							onNoSel();
 			}else if(btnTag.equalsIgnoreCase(WdsWlPubConst.DM_PLANDEAL_BTNTAG_SELALL)){
