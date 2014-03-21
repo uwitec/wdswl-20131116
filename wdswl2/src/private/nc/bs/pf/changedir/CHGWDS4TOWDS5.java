@@ -94,6 +94,9 @@ public String[] getFormulas() {
 		super.setSysDate(new UFDate(System.currentTimeMillis()).toString());
 	}
 	return new String[] {
+			//add by yf 2014-03-17  预留字段7(RESERVE7) 上显示 销售运单生成时间 begin
+			"H_reserve7->tostring(datetime())",
+			//add by yf 2014-03-17 预留字段7(RESERVE7) 上显示 销售运单生成时间 end
 			"H_pk_outwhouse->B_cbodywarehouseid",
 			"H_pk_billtype->\""+WdsWlPubConst.WDS5+"\"",
 			"H_vbillstatus->int(8)",
